@@ -20,3 +20,23 @@ Comandos:
 - **LARGAR** <ins>**quantidade**</ins> <ins>**item**</ins>: Largar vários itens
 - **SAIR**: Sair do jogo (deslogar)
 
+## Como rodar o projeto na sua máquina
+
+Se quiser testar as aventuras de texto localmente, o jeito mais fácil e rápido é usando o `tsx`. Segue o passo a passo:
+
+
+1. Clone este repositório:
+   ```bash
+   git clone https://github.com/erickweil/textadventures.git
+   ```
+
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
+
+3. Escolha uma aventura e rode direto no terminal:
+   ```bash
+   npx tsx nome-do-arquivo.ts
+   ```
+

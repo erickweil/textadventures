@@ -23,15 +23,15 @@ export function _prompt() {
 }
 
 export function termPrint(...str: unknown[]) {
-    for(let s of str) {
-        if(!s) continue;
-        term.write((""+s).replaceAll("\n","\r\n")+" ");
+    for (let s of str) {
+        if (!s) continue;
+        term.write(("" + s).replaceAll("\n", "\r\n") + " ");
     }
     term.writeln(" ");
 }
 
 export function termPrintRaw(str: unknown) {
-    term.write((""+str)?.replaceAll("\n","\r\n") || "");
+    term.write(("" + str)?.replaceAll("\n", "\r\n") || "");
 }
 
 export function termClear() {
@@ -47,14 +47,14 @@ export function prompt(...str: unknown[]): Promise<string> {
     lastPromptStr = [...str];
 
     const last = str.pop() || "> ";
-    if(str.length > 0) {
+    if (str.length > 0) {
         termPrint(...str);
-    }    
-    term.write(""+last+command);
+    }
+    term.write("" + last + command);
     return new Promise<string>((resolve, reject) => {
         waitingPrompt = (input: string | Error) => {
             waitingPrompt = null;
-            if(input instanceof Error) {
+            if (input instanceof Error) {
                 reject(input);
             } else {
                 resolve(input);
@@ -66,16 +66,16 @@ export function prompt(...str: unknown[]): Promise<string> {
 let passwordMode = false;
 export async function passwordPrompt(...str: unknown[]) {
     try {
-    passwordMode = true;
-    const result = await prompt(...str);
-    return result;
+        passwordMode = true;
+        const result = await prompt(...str);
+        return result;
     } finally {
         passwordMode = false;
     }
 }
 
 export async function optionsPrompt(_options: string[], ...str: unknown[]) {
-    if(_options.length === 0) throw new Error("Nenhuma opção fornecida");
+    if (_options.length === 0) throw new Error("Nenhuma opção fornecida");
     try {
         optionsMode = true;
         options = _options;
@@ -87,7 +87,7 @@ export async function optionsPrompt(_options: string[], ...str: unknown[]) {
 }
 
 export function termPrintAbovePrompt(...str: unknown[]) {
-    if(waitingPrompt === null) {
+    if (waitingPrompt === null) {
         termPrint(...str);
         return;
     }
@@ -100,10 +100,10 @@ export function termPrintAbovePrompt(...str: unknown[]) {
     // Reprint the prompt and command
     const promptBefore = [...lastPromptStr];
     const last = promptBefore.pop() || "> ";
-    if(promptBefore.length > 0) {
+    if (promptBefore.length > 0) {
         termPrint(...promptBefore);
     }
-    term.write(""+last+command);
+    term.write("" + last + command);
 }
 
 let command = '';
@@ -120,7 +120,7 @@ export function addCommand(cmd: string, config: ComandConfig) {
 function onInput(term: Terminal, text: string) {
     text = text?.trim() || "";
 
-    if(waitingPrompt) {
+    if (waitingPrompt) {
         term.writeln("");
         waitingPrompt(text);
         return;
@@ -132,17 +132,17 @@ function onInput(term: Terminal, text: string) {
         term.writeln('');
         if (command in commands) {
             let promise = commands[command].f(...args);
-            if(promise && promise.then) {
+            if (promise && promise.then) {
                 promise.then(() => {
                     _prompt();
                 });
             }
-            if(promise && promise.catch) {
+            if (promise && promise.catch) {
                 promise.catch((err) => {
                     termPrint("Erro:", err?.toString());
                     _prompt();
                 });
-            } 
+            }
             return;
         }
         term.writeln(`${command}: é oq? digite 'ajuda' para mais informações`);
@@ -152,6 +152,22 @@ function onInput(term: Terminal, text: string) {
 
 const commandHistory: string[] = [];
 let historyIndex: number = 0;
+
+let suggestions: string[] = [];
+
+export function addSuggestions(words: string[]) {
+    suggestions.push(...words);
+}
+
+let activeSuggestions: string[] = [];
+
+export function setActiveSuggestions(words: string[]) {
+    activeSuggestions = words;
+}
+
+export function clearActiveSuggestions() {
+    activeSuggestions = [];
+}
 
 function runFakeTerminal() {
     if ((term as any)._initialized) {
@@ -169,12 +185,12 @@ function runFakeTerminal() {
             case '\u0003': // Ctrl+C
                 term.write('^C');
                 _prompt();
-                if(waitingPrompt) {
-                    waitingPrompt(new Error("Ctrl + C"));   
+                if (waitingPrompt) {
+                    waitingPrompt(new Error("Ctrl + C"));
                 }
                 break;
             case '\r': // Enter
-                if(!optionsMode) {
+                if (!optionsMode) {
                     if (command.trim().length > 0) {
                         commandHistory.push(command);
                     }
@@ -193,7 +209,7 @@ function runFakeTerminal() {
                 }
                 break;
             case '\x1b[A': // Seta para Cima
-                if(optionsMode) {
+                if (optionsMode) {
                     // Cicla pelas opções
                     const currentOption = command.trim().toLowerCase() || options[0].toLowerCase();
                     let currentIndex = options.findIndex(o => o.toLowerCase() === currentOption);
@@ -218,7 +234,7 @@ function runFakeTerminal() {
                 break;
 
             case '\x1b[B': // Seta para Baixo
-                if(optionsMode) {
+                if (optionsMode) {
                     // Cicla pelas opções
                     const currentOption = command.trim().toLowerCase() || options[0].toLowerCase();
                     let currentIndex = options.findIndex(o => o.toLowerCase() === currentOption);
@@ -240,14 +256,31 @@ function runFakeTerminal() {
                 } else if (historyIndex === commandHistory.length - 1) {
                     // Se estiver no último item, ir para baixo limpa o comando
                     historyIndex++;
-                     for (let i = 0; i < command.length; i++) {
+                    for (let i = 0; i < command.length; i++) {
                         term.write('\b \b');
                     }
                     command = "";
                 }
-            break;
+                break;
+            case '\t':
+                if (!optionsMode) {
+                    const todasSugestoes = activeSuggestions.length > 0
+                        ? [...activeSuggestions]                          // dentro do jogo
+                        : [...Object.keys(commands), ...suggestions];    // fora do jogo
+
+                    const match = todasSugestoes.find(n => n.startsWith(command));
+                    if (match) {
+                        for (let i = 0; i < command.length; i++) {
+                            term.write('\b \b');
+                        }
+                        command = match;
+                        term.write(command);
+                    }
+                }
+                break;
+                break;
             default: // Print all other characters for demo
-                if(optionsMode) {
+                if (optionsMode) {
                     // apaga a última opção
                     for (let i = 0; i < command.length; i++) {
                         term.write('\b \b');

@@ -6,7 +6,7 @@ import { floresta } from './jogos/floresta';
 import { labirinto } from './jogos/labirinto';
 import { lol } from './jogos/lol';
 import { mansao } from './jogos/mansao';
-import { oExperimento } from './jogos/oExperimento';
+import { oExperimento } from './jogos/oExperimento/oExperimento';
 import { scaperoom } from './jogos/scaperoom';
 import { sonhos } from './jogos/sonhos';
 import { vereth } from './jogos/vereth';

@@ -13,6 +13,8 @@ let oeste = false
 
 let solto = false
 let viuLeste = false
+let pegouCabra = false
+let usouCabra = false
 let tentouAbrirBau = false
 let bicicletaRemovida = false
 let bauAberto = false
@@ -24,6 +26,7 @@ let pegouFusivel3 = false
 let fusiveisColocados = false
 let disjuntorLigado = false
 let emCaldeira = false
+let tomouSusto = false
 let decoracaoLivre = false
 let portaCaldeiraAberta = false
 let luzAcesa = false
@@ -38,6 +41,7 @@ let fase2Ativa = false
 let salaAtual = "deposito"
 let turnos = 0
 let mortesFase2 = 0
+let viuEscada = false
 let cozinhaExplodiu = false
 let garagemExplodiu = false
 let temBarraFerro = false
@@ -96,13 +100,23 @@ function Leste() {
 }
 
 function Norte() {
-    if (solto) {
+    if (solto && pegouCabra) {
+        console.log(
+        "Estou a Norte do porão.\n"+
+        "Consigo ver um grande painel com diversas ferramentas velhas e enferrujadas.\n"+
+        "Dificilmente algo aqui teria utilidade, é mais provavel que eu pegue tétano ao toca-las.\n"+ 
+        "Já peguei o que tinha de útil aqui.")
+    norte = true
+    sul = false
+    leste = false
+    oeste = false
+    } else if (solto) {
         console.log(
         "Estou a Norte do porão.\n"+
         "Consigo ver um grande painel com diversas ferramentas velhas e enferrujadas.\n"+
         "Dificilmente algo aqui teria utilidade, é mais provavel que eu pegue tétano ao toca-las.\n"+ 
         "Se bem que... o pé de cabra não parece tão péssimo assim...\n"+ 
-        "embora pareça que vai quebrar após um único uso")
+        "embora pareça que vai quebrar após um único uso.")
     norte = true
     sul = false
     leste = false
@@ -113,7 +127,17 @@ function Norte() {
 }
 
 function Sul() {
-    if (solto) {
+    if (solto && usouCabra) {
+        console.log(
+        "Estou a Sul do porão.\n"+
+        "Vejo um baú reforçado e uma velha bicicleta quebrada,\n"+ 
+        "talvez tenha algo útil alí. Bem, também tem um pequeno cômodo aqui do lado.\n"+ 
+        "A porta não está mais emperrada, agora posso entrar e sair livremente.")
+    norte = false
+    sul = true
+    leste = false
+    oeste = false
+    } else if (solto) {
         console.log(
         "Estou a Sul do porão.\n"+
         "Vejo um baú reforçado e uma velha bicicleta quebrada ao sul do porão,\n"+ 
@@ -129,14 +153,38 @@ function Sul() {
 }
 
 function Oeste() {
-    if (solto) {
+    if (solto && decoracaoLivre && tomouSusto) {
+        console.log(
+        "Estou a Oeste do porão.\n"+
+        "Um disjuntor se encontra bem ao pé da escada, mas não tem fusíveis para funcionar.\n"+
+        "Parece que ele precisa de três fusíveis... mas para que eu ligaria as luzes?\n"+
+        "Consigo ver minha liberdade no topo da escada! E logo abaixo está a porta do depósito,\n"+
+        "com aquela decoração de Halloween feia que dói.")
+    norte = false
+    sul = false
+    leste = false
+    oeste = true
+    } else if (solto && decoracaoLivre) {
+        console.log(
+        "Estou a Oeste do porão.\n"+
+        "Um disjuntor se encontra bem ao pé da escada, mas não tem fusíveis para funcionar.\n"+
+        "Parece que ele precisa de três fusíveis... mas para que eu ligaria as luzes?\n"+
+        "Consigo ver minha liberdade no topo da escada, e logo abaixo está a porta do depósito onde\n"+
+        "aquela coisa se esconde... Mas por que ainda não me atacou ou sequer emite um som?\n"+ 
+        "Acho que eu deveria olhar novamente o depósito.")
+        tomouSusto = true
+    norte = false
+    sul = false
+    leste = false
+    oeste = true
+    } else if (solto) {
         console.log(
         "Estou a Oeste do porão.\n"+
         "Um disjuntor se encontra bem ao pé da escada, mas não tem fusível algum para funcionar.\n"+
         "Parece que ele precisa de três fusíveis... mas para que eu ligaria as luzes?\n"+
         "Enfim, consigo ver minha liberdade no topo da escada!\n"+
-        "...Mas também vejo outra porta de uma espécie de depósito abaixo dela.\n"+ 
-        "Essa porta não parece estar trancada.")
+        "...Mas também vejo outra porta no corpo da escadaria. Parece ser um tipo de depósito.\n"+ 
+        "Esse depósito não parece estar trancado.")
     norte = false
     sul = false
     leste = false
@@ -179,85 +227,113 @@ function processarComando(comando) {
         if (alvo === "janela" && viuLeste && leste && !inventario.includes("caco de vidro")) {
             console.log("A janela está quebrada. Pegar um caco não será nada difícil.")
 
-        } else if (alvo === "caixas" && solto && leste && !tentouAbrirBau) {
-            console.log("Sem saber o que exatamente procurar, vejo apenas pilhas de papéis velhos,\n"+ 
-            "canetas secas e grampeadores quebrados ao revistar essas caixas.")
+        } else if (alvo === "caco" && viuLeste && leste) {
+            if (!inventario.includes("caco de vidro")) {
+                console.log("os estilhaços de vidro emolduram o interior da janela.\n"+ 
+                "Se atrever a passar por essa abertura não passa de insanidade,\n"+ 
+                "contudo, um caco maior chama a atenção. Talvez ele possa cortar a corda.")
+                } else {
+                console.log("os estilhaços de vidro emolduram o interior da janela.\n"+ 
+                "Se atrever a passar por essa abertura não passa de insanidade,\n"+ 
+                "mesmo sem o caco de vidro que eu removi.")
+            }
 
-        } else if (alvo === "caixas" && solto && leste && tentouAbrirBau) {
-            console.log("Ei, espera aí, aquilo é uma chave? Talvez ela possa abrir alguma coisa por aqui.")
-        
+        } else if (alvo === "caixas") {
+            if (solto && leste && !tentouAbrirBau) {
+                console.log("Sem saber o que exatamente procurar, vejo apenas pilhas de papéis velhos,\n"+ 
+                "canetas secas e grampeadores quebrados ao revistar essas caixas.")
+                } else if (alvo === "caixas" && solto && leste && tentouAbrirBau && inventario.includes("chave")) {
+                console.log("Acho que não tem mais nada de útil por aqui")
+                } else if (alvo === "caixas" && solto && leste && tentouAbrirBau) {
+                console.log("Ei, espera aí, aquilo é uma chave? Talvez ela possa abrir alguma coisa por aqui.")
+            }
         } else if (alvo === "pe de cabra" && solto && norte && !inventario.includes("pé de cabra")) {
             console.log("O pé de cabra está velho e gasto. Vai quebrar bem fácil,\n"+
-                "mas ainda pode ser útil.")
+            "mas ainda pode ser útil.")
         
         } else if (alvo === "bicicleta" && solto && sul && !bicicletaRemovida && !emCaldeira) {
         console.log("Uma bicicleta coberta de poeira. A roda está torcida no formato de um L,\n"+
             "a corrente está arrebentada e os freios nem devem mais funcionar. A única coisa que\n"+
-            "essa bicicleta faz é me impedir de abrir o baú abaixo dela")
+            "essa bicicleta faz é me impedir de abrir o baú abaixo dela.")
+
+        } else if (alvo === "porta") {
+            if (solto && sul && usouCabra && !emCaldeira) {
+                console.log("Uma porta de madeira escura se encontra separando um pequeno cômodo do resto\n"+
+                "do porão. Agora posso entrar e sair sem problemas pela porta.")                
+                } else if (solto && sul && !emCaldeira) {
+                console.log("Uma porta de madeira escura se encontra separando um pequeno cômodo do resto\n"+
+                "do porão. A porta se encontra um tanto emperrada, mas ainda deve ser possivel abri-la.")
+            }
         
         } else if (alvo === "bau") {
-            if(solto && sul && bicicletaRemovida && bauAberto && !emCaldeira) {
-            console.log("Você abre o baú com sucesso! Dentro dele, no entanto, não parece ter muito\n"+
-            "além de cabos velhos, partes eletrônicas e- Ei! Você achou um fusível.")
-
-            } else if(solto && sul && bicicletaRemovida && !bauAberto && !emCaldeira) {
-            console.log("Um velho baú reforçado está trancado com uma trava de metal.\n"+ 
-            "Droga... Parece que você preciso de uma chave para abrí-lo.")
-            tentouAbrirBau = true
-
-            } else if(solto && sul && !bicicletaRemovida && !bauAberto && !emCaldeira) {
-            console.log("Um velho baú reforçado está trancado com uma trava de metal.\n"+ 
-            "Droga... Parece que você preciso de uma chave para abrí-lo...\n"+
-            "mas tirar a bicicleta de cima do baú já seria um bom começo")
-            tentouAbrirBau = true
+            if (solto && sul && bicicletaRemovida && bauAberto && !emCaldeira && inventario.includes("fusível do baú")) {
+                console.log("Você dá uma olhada dentro do baú, no entanto, não parece ter muito\n"+
+                "além de cabos velhos, partes eletrônicas e uma coleção de vinis dos anos 70 e 80.")
+                } else if(solto && sul && bicicletaRemovida && bauAberto && !emCaldeira) {
+                console.log("Você abre o baú com sucesso! Dentro dele, no entanto, não parece ter muito\n"+
+                "além de cabos velhos, partes eletrônicas e- Ei! Você achou um fusível.")
+                } else if(solto && sul && bicicletaRemovida && !bauAberto && !emCaldeira) {
+                console.log("Um velho baú reforçado está trancado com uma trava de metal.\n"+ 
+                "Droga... Parece que você preciso de uma chave para abrí-lo.")
+                tentouAbrirBau = true
+                } else if(solto && sul && !bicicletaRemovida && !bauAberto && !emCaldeira) {
+                console.log("Um velho baú reforçado está trancado com uma trava de metal.\n"+ 
+                "Droga... Parece que você preciso de uma chave para abrí-lo...\n"+
+                "mas tirar a bicicleta de cima do baú já seria um bom começo.")
+                tentouAbrirBau = true
             }
 
         } else if (alvo === "fusivel") {
             if (sul && bauAberto && !pegouFusivel1) {
                 console.log("Um fusível aparentemente funcional. Pode vir a calhar.")
-
                 } else if (emCaldeira && !pegouFusivel2) {
-                    console.log("Um fusível jogado no chão da sala da caldeira. Parece funcional.")
-
+                console.log("Um fusível jogado no chão da sala da caldeira. Parece funcional.")
                 } else if (oeste && decoracaoLivre && !pegouFusivel3) {
-                    console.log("A pessoa que escondeu esse fusível aqui não é inocente, e nem bobo.")
-                    
+                console.log("A pessoa que escondeu esse fusível aqui não é inocente, e nem bobo.")
                 } else {
                 console.log("Não há mais fusíveis disponíveis para pegar aqui.");
             }
 
         } else if (alvo === "caderno" && solto && emCaldeira) {
-            console.log("Você vê um caderno de capa vermelha. Ele parece estranhamente não empoeirado")
+            console.log("Você vê um caderno de capa vermelha. Ele parece estranhamente não empoeirado.")
         
         } else if (alvo === "escada" && solto && oeste) {
         console.log("Uma velha escada de madeira. O espaço do seu interior foi reaproveitado\n"+
             "para se tornar um pequeno depósito, ou pelo menos é o que a porta em sua parte\n"+
-            "infeior indica. Subindo os degraus da escadda com um olhar, vejo uma possível saída\n"+
+            "infeior indica. Subindo os degraus da escadda com o olhar, vejo uma possível saída\n"+
             "em seu topo.")
 
-        } else if (alvo === "disjuntor" && solto && oeste) {
-        console.log("O disjuntor está bem em frente a escada, contudo, ele não pode ser ligado.\n"+
-            "Os fusíveis estão faltando. Seria bom ter um pouco de luz... o dia já está começando\n"+
-            "a escurecer..."
-        )
+        } else if (alvo === "disjuntor") {
+            if (solto && oeste && fusiveisColocados) {
+                console.log("O disjuntor já tem o necessário, não há mais fusíveis para colocar aqui.");
+                } else if (solto && oeste) {
+                console.log("O disjuntor está bem em frente a escada, contudo, ele não pode ser ligado.\n"+
+                "Os fusíveis estão faltando. Seria bom ter um pouco de luz... o dia já está começando\n"+
+                "a escurecer...")
+            }
 
         } else if (alvo === "deposito") {
-            if (solto && oeste && decoracaoLivre) {
+            if (solto && oeste && decoracaoLivre && !inventario.includes("fusível de Halloween")) {
                 console.log("Olhando com cautela... A criatura não passa de uma decoração de \n"+
                 "dia das bruxas... Na verdade, olhando de perto ela parece até ser um pouco mal\n"+ 
                 "feita, tendo em vista a dificuldade de distinguir que criatura essa coisa\n"+
                 "deveria ser, mas isso não importa muito, o que importa é que você encontrou\n"+ 
                 "um fusível ao lado do pé da decoração feia.")
-            } else if (solto) {
-                console.log("A porta do depósito parece estar apeanas vagamente escorada.\n"+
-                "Não tem nada que te impessa de abri-la")
+                } else if (solto && oeste && decoracaoLivre) {
+                console.log("Dentro do depósito descansa a besta horrorosa, com seu pelo escuro\n"+
+                "coberto por uma bela camada de poeira. Ao seu redor estão mais caixas com decorações\n"+ 
+                "repletas de poeira. É certo que se aproximar disso causará uma senhora crise de espirros,\n"+ 
+                "então é melhor evitar contato. Não há mais nada de interessante aí dentro.")
+                } else if (solto) {
+                console.log("A porta do depósito parece estar apenas vagamente escorada.\n"+
+                "Não tem nada que te impessa de abri-la.")
             }
 
         } else if (alvo === "porta" && emEscada) {
             if (solto && sabeSenha) {
-                console.log("Eu preciso digitar a senha para sair")
-            } else if (solto && !sabeSenha) {
-                console.log("Aparentemnete, essa é minha única saída. Uma porta trancada atrás de\n"+
+                console.log("Eu preciso digitar a senha para sair.")
+                } else if (solto && !sabeSenha) {
+                console.log("Aparentemente, essa é minha única saída. Uma porta trancada atrás de\n"+
                 "um código de 4 dígitos. Preciso descobrir qual é a senha para dar o fora daqui.")
             }
         } else {
@@ -267,15 +343,21 @@ function processarComando(comando) {
     }
 
     if (acao === "pegar") {
-        if (alvo === "caco" && viuLeste && leste && !inventario.includes("caco de vidro")) {
-            console.log("Você pega um caco afiado da janela quebrada.")
-            adicionarItem("caco de vidro")
-        
+        if (alvo === "caco") {
+            if (viuLeste && leste && !inventario.includes("caco de vidro")) {
+                console.log("Você pega um caco afiado da janela quebrada.")
+                adicionarItem("caco de vidro")
+                } else if (viuLeste && leste && inventario.includes("caco de vidro")) {
+                console.log("Um caco já parece suficiente para cortar a corda.")
+            }
+            
         } else if (alvo === "chave" && leste && tentouAbrirBau && !encontrouChave) {
             encontrouChave = true
+            console.log("Você pega uma chave de metal velha de dentro das caixas.")
             adicionarItem("chave")
         
         } else if (alvo === "pe de cabra" && solto && norte && !inventario.includes("pé de cabra")) {
+            pegouCabra = true
             adicionarItem("pé de cabra")
         
         } else if (alvo === "bicicleta" && solto && sul && !bicicletaRemovida && !emCaldeira) {
@@ -298,8 +380,7 @@ function processarComando(comando) {
                 } else if (oeste && decoracaoLivre && !pegouFusivel3) {
                     adicionarItem("fusível de Halloween")
                     pegouFusivel3 = true
-                    quantiaFusivel++
-                    
+                    quantiaFusivel++    
                 } else {
                 console.log("Não há mais fusíveis disponíveis para pegar aqui.");
             }
@@ -311,29 +392,36 @@ function processarComando(comando) {
     }
 
     if (acao === "usar") {
-        if (alvo === "caco" && inventario.includes("caco de vidro") && !solto) {
-            console.log("Você usa o caco de vidro para cortar suas amarras.");
-            solto = true;
+        if (alvo === "caco") {
+            if (inventario.includes("caco de vidro") && !solto) {
+                console.log("Você usa o caco de vidro para cortar suas amarras.");
+                solto = true;
+                } else if (inventario.includes("caco de vidro") && solto) {
+                console.log("Você já está livre, não precisa mais usar o caco para se soltar.");
+            }
 
-        } else if (alvo === "chave" && solto && sul && bicicletaRemovida && !bauAberto && encontrouChave && !emCaldeira) {
-            console.log("Você usa a chave para destrancar o baú.");
-            bauAberto = true;
+        } else if (alvo === "chave") {
+            if (solto && sul && bicicletaRemovida && !bauAberto && encontrouChave && !emCaldeira) {
+                console.log("Você usa a chave para destrancar o baú.");
+                bauAberto = true;
+                } else if (solto && sul && bicicletaRemovida && bauAberto && encontrouChave && !emCaldeira) {
+                console.log("Você já destrancou o baú.");
+            }
 
-        } else if (alvo === "escada" && emEscada) {
-            console.log(
-            "Você desce as escadas, ouvindo o ranger das tábuas sob seus pés.")
-            emEscada = false
-            norte = false
-            sul = false
-            leste = false
-            oeste = true
-
-        } else if (alvo === "escada" && solto && oeste) {
-            console.log(
-            "Você sobe a escada de madeira. A poeira levanta conforme você alcança o topo.\n"+
-            "Você vê a porta de saída... trancada.\n"+ 
-            "Uma tranca com uma senha de 4 digitos te mantem longe de ser livre")
-            emEscada = true
+        } else if (alvo === "escada") {
+            if (emEscada) {
+                console.log("Você desce as escadas, ouvindo o ranger das tábuas sob seus pés.")
+                emEscada = false
+                norte = false
+                sul = false
+                leste = false
+                oeste = true
+                } else if (solto && oeste) {console.log(
+                "Você sobe a escada de madeira. A poeira levanta conforme você alcança o topo.\n"+
+                "Você vê na porta de saída... trancada.\n"+ 
+                "Uma tranca com uma senha de 4 digitos te mantem longe de ser livre")
+                emEscada = true
+            }
 
         } else if (alvo === "pe de cabra" && solto && sul && inventario.includes("pé de cabra")) {
             console.log(
@@ -342,13 +430,14 @@ function processarComando(comando) {
             "Você segura a parte fragilizada do pé de cabra, tentando fazer com que ele dure mais tempo,\n"+
             "e por um triz, você consegue abrir a porta, mas o pé de cabra se partiu ao meio")
             portaCaldeiraAberta = true
+            usouCabra = true
 
         } else if (alvo === "porta" && emEscada) {
             if (solto && sabeSenha) {
                 console.log("Você cruza a porta e finalmente sai do porão")
                 livre = true
                 iniciarFase2()
-            } else if (solto && !sabeSenha) {
+                } else if (solto && !sabeSenha) {
                 console.log("A porta está trancada. Você não consegue sair sem digitar a senha.")
             }
 
@@ -360,52 +449,90 @@ function processarComando(comando) {
             leste = false
             oeste = false
 
-        } else if (alvo === "porta" && solto && sul && portaCaldeiraAberta) {
-            console.log("Você passa pela porta outrora emperrada. A porta não revela nada além de\n"+
+        } else if (alvo === "porta" && solto && sul) {
+            if (portaCaldeiraAberta && inventario.includes("caderno") && inventario.includes("fusível da caldeira")) {
+                console.log("Você passa pela porta outrora emperrada. A porta não revela nada além de\n"+
+                "uma salinha feita para a caldeira. O ar aqui parece mais abafado.\n"+
+                "Tubos e valvulas se estendem para além da caldeira, passando por trás de um pequeno\n"+
+                "gaveteiro de escritório. Não tem mais nada de muito importância por aqui")
+                emCaldeira = true
+                } else if (portaCaldeiraAberta && inventario.includes("fusível da caldeira") && !inventario.includes("caderno")) {
+                console.log("Você passa pela porta outrora emperrada. A porta não revela nada além de\n"+
                 "uma salinha feita para a caldeira. O ar aqui parece mais abafado.\n"+
                 "Tubos e valvulas se estendem para além da caldeira, passando por trás de um pequeno\n"+
                 "gaveteiro de escritório, a primeira vista não muito importante,\n"+
-                "até você notar um caderno sobre ele. Ah, tem um fusível caído ao lado do gaveteiro")
-            emCaldeira = true
+                "até você notar um caderno sobre ele.")
+                emCaldeira = true
+                } else if (portaCaldeiraAberta && inventario.includes("caderno") && !inventario.includes("fusível da caldeira")) {
+                console.log("Você passa pela porta outrora emperrada. A porta não revela nada além de\n"+
+                "uma salinha feita para a caldeira. O ar aqui parece mais abafado.\n"+
+                "Tubos e valvulas se estendem para além da caldeira, passando por trás de um pequeno\n"+
+                "gaveteiro de escritório. Ah, tem um fusível caído ao lado do gaveteiro.")
+                emCaldeira = true
+                } else if (portaCaldeiraAberta) {
+                console.log("Você passa pela porta outrora emperrada. A porta não revela nada além de\n"+
+                "uma salinha feita para a caldeira. O ar aqui parece mais abafado.\n"+
+                "Tubos e valvulas se estendem para além da caldeira, passando por trás de um pequeno\n"+
+                "gaveteiro de escritório, a primeira vista não muito importante,\n"+
+                "até você notar um caderno sobre ele. Ah, tem um fusível caído ao lado do gaveteiro.")
+                emCaldeira = true
+            }
 
-        } else if (alvo === "deposito" && solto && oeste && decoracaoLivre) {
-            console.log("Não tem mais nada de útil por aqui.")
-            
-        } else if (alvo === "deposito" && solto && oeste) {
-            console.log("Você abre a porta do depósito abaixo da escada e sente o sangue gelar em\n"+
+        } else if (alvo === "deposito") {
+            if (solto && oeste && decoracaoLivre) {
+                console.log("Não tem mais nada de útil por aqui.")
+                } else if (alvo === "deposito" && solto && oeste) {
+                 console.log("Você abre a porta do depósito abaixo da escada e sente o sangue gelar em\n"+
                 "menos de um segundo. Uma criatura diabólica com presas e garras afiadas lhe observa\n"+
                 "com um sorriso macabro! Você instintivamente recua, temendo por sua vida.")
-            decoracaoLivre = true
+                decoracaoLivre = true
+            }
 
-        } else if (alvo === "fusivel" && solto && oeste && (quantiaFusivel === 3)) {
-            console.log("Você coloca os fuziveis no disjuntor. Agora só falta ligá-lo.")
-            fusiveisColocados = true
+        } else if (alvo === "fusivel") {
+            if ( solto && oeste && fusiveisColocados) {
+                console.log("Não há mais fusiveis a serem colocados.")
+                } else if (alvo === "fusivel" && solto && oeste && (quantiaFusivel === 3)) {
+                console.log("Você coloca os fuziveis no disjuntor. Agora só falta ligá-lo.")
+                fusiveisColocados = true
+                } else if (alvo === "fusivel" && solto && oeste && (quantiaFusivel < 3)) {
+                console.log("Acho melhor reunir todos os fuziveis primeiro.")
+            }
 
-        } else if (alvo === "disjuntor" && solto && oeste && fusiveisColocados) {
-            console.log("Você segura o interruptor de ligar do disjuntor por um segundo inteiro\n"+
+        } else if (alvo === "disjuntor") {
+            if (solto && oeste && disjuntorLigado && luzAcesa) {
+                console.log("Não existe necessidade em desligar o disjuntor, eu apenas vou ficar no\n"+
+                "escuro novamente caso o faça. Eu só queria saber que cheiro estranho é esse...")
+                } else if (alvo === "disjuntor" && solto && oeste && fusiveisColocados) {
+                console.log("Você segura o interruptor de ligar do disjuntor por um segundo inteiro\n"+
                 "enquanto respira fundo, e então o liga de uma vez. Um estalo se escuta ressoar\n"+
                 "pelo cômodo. As luzes piscam por um momento antes de se estabilizarem.\n"+
                 "Você restaurou a energia do porão... e pouco tempo depois, começou a sentir\n"+
                 "um cheiro estranho...")
-            disjuntorLigado = true
-            luzAcesa = true
+                disjuntorLigado = true
+                luzAcesa = true
+            }
 
         } else if (alvo === "caderno") {
             if (!luzAcesa && inventario.includes("caderno")) {
                 console.log("Está muito escuro para conseguir ler qualquer coisa.")
-            } else if (luzAcesa && inventario.includes("caderno")) {
+                } else if (luzAcesa && inventario.includes("caderno")) {
                 console.log("Você lê o conteúdo do caderno...\n"+
-                    "Dia 25/07 - Hoje é um dia importa. O dia em que meu pequeno experimento começa\n"+
-                    "A cobaia ainda respira. Em breve vai estar se perguntando por quê. A resposta\n"+
-                    "é simples: curiosidade. Quero ver até onde vai a teimosia antes de se quebrar\n"+ 
-                    "por completo. Não deve durar mais de um dia, claro... mas é suficiente para\n"+ 
-                    "o meu entretenimento.")
-                    sabeSenha = true
+                "Dia 25/07 - Hoje é um dia importa. O dia em que meu pequeno experimento começa\n"+
+                "A cobaia ainda respira. Em breve vai estar se perguntando por quê. A resposta\n"+
+                "é simples: curiosidade. Quero ver até onde vai a teimosia antes de se quebrar\n"+ 
+                "por completo. Não deve durar mais de um dia, claro... mas é suficiente para\n"+ 
+                "o meu entretenimento.")
+                sabeSenha = true
             }
 
-        } else if (alvo === "2507" && solto && sabeSenha && emEscada) {
-            console.log("Você usa a senha na tranca e ela se abre em um piscar de olhos.")
-            senhaUsada = true
+        } else if (alvo === "2507") {
+            if (solto && emEscada && !sabeSenha) {
+                console.log("Ei espertinho, você precisa ENCONTRAR a senha\n"+
+                "Colocá-la direto, mesmo que você lembre, não vai te levar pro próximo nível.")
+                } else if (alvo === "2507" && solto && emEscada && sabeSenha) {
+                console.log("Você usa a senha na tranca e ela se abre em um piscar de olhos.")
+                senhaUsada = true
+            }
 
         } else {
             console.log("Não posso usar isso agora.")
@@ -419,7 +546,7 @@ function processarComando(comando) {
     }
 
     if (["n", "s", "l", "o"].includes(comando) && (emEscada || emCaldeira)) {
-        console.log("Não posso fazer isso agora.");
+        console.log("Não posso ir nessa direção agora.");
         return;
     }
 
@@ -477,7 +604,7 @@ function reiniciarFase2() {
 
     switch (mortesFase2) {
         case 1:
-            console.log("Você se vê no depósito, se sentindo como num déjà vu.")
+            console.log("Você se vê num depósito... sentindo um certo déjà vu.")
             break
         case 2:
             console.log("Você se vê no depósito... Suas mãos ainda tremem graças a explosão")
@@ -489,7 +616,7 @@ function reiniciarFase2() {
             console.log("É como acordar de um sonho dentro de um sonho... Sem parar..!")
             break
         default:
-            console.log("Não desista. Você está quase lá, só precisa ser mais rápido.")
+            console.log("Não desista. Você está quase lá, só precisa continuar tentando.")
     }
     descreverSala()
 }
@@ -517,12 +644,8 @@ function checarTempo() {
     if (turnos === 13 && garagemExplodiu && cozinhaExplodiu) {
         console.log("A casa desaba com as explosões recentes e as chamas... e você não saiu a tempo.\n"+ 
             "Você foi soterrado pelos destroços flamejantes.")
-        garagemExplodiu = true
-        if (salaAtual === "garagem" || salaAtual === "corredor") {
-            console.log("Você foi pego pela explosão na garagem. Um clarão inunca sua visão.")
             reiniciarFase2()
             return
-        }
     }
 }
 
@@ -572,15 +695,24 @@ function descreverSala() {
             }
             break
         case "corredor":
-            console.log("Você está no corredor principal da casa. A fumaça densa vem da escada que\n"+
-                "leva ao andar de cima. Não tem como subir lá em cima. De repente algo fez sentido\n"+ 
+            if (viuEscada) {
+                console.log("Você está no corredor principal da casa. A fumaça continua descendo do\n"+
+                "andar de cima. Subir seria insanidade, tendo em vista que as chamas vem de lá.\n"+ 
+                "Ao Norte, você retornará ao lado leste da sala. \n"+
+                "A Leste, uma porta leva a garagem. Oeste leva a cozinha. Sul leva a porta de entrada.")
+            } else {
+                console.log("Você está no corredor principal da casa. A fumaça densa vem da escada que\n"+
+                "leva ao andar de cima. Não tem como subir para o andar superior. De repente algo fez sentido\n"+ 
                 "em sua mente. O cheiro estranho que subiu depois que o disjuntor foi ativado...\n"+ 
                 "Se a parte elétrica estiver como o resto da casa, então a fiação estragada deve ter\n"+
                 "começado o incêndio. Ao Norte, você retornará ao lado leste da sala. \n"+
                 "A Leste, uma porta leva a garagem. Oeste leva a cozinha. Sul leva a porta de entrada.")
+                viuEscada = true
+            }
             break
         case "entrada":
             console.log("Você está na entrada da casa. A porta está trancada com um cadeado de senha.\n"+
+                "Você tenta a mesma combinação de antes, mas a combinação não funciona.\n"+
                 "Você não tem tempo para descobrir a senha. Precisa encontrar outra forma de sair")
             break
         case "quintal":
@@ -651,10 +783,15 @@ function mover(direcao) {
 
 // Ações da fase 2
 function olhar(alvo) {
-    if (alvo === "janela" && salaAtual === "deposito") {
+    if (alvo === "janela" && salaAtual === "deposito" || salaAtual === "salaoeste") {
         console.log("Está coberta por tábuas pregadas com força. Nenhuma chance de sair por aqui.")
     } else if (alvo === "barra de ferro" && salaAtual === "garagem" && !temBarraFerro) {
         console.log("Você nota uma barra de ferro encostada entre duas caixas. Pode ser útil.")
+    } else if (alvo === "botijao" && salaAtual === "cozinha") {
+        console.log("Você observa o botijão de gás inerte, incapaz de dizer se está mesmo vazio,\n" +
+            "no entanto, a última coisa que você descobrir agora é justamente isso")
+    } else if (alvo === "sofa" && salaAtual === "salaleste") {
+        console.log("Você vê um pobre sofá rasgado. Uma mancha de vinho ainda é visível nele.")
     } else {
         console.log("Você não vê nada de especial.")
     }

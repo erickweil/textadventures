@@ -1,12 +1,21 @@
 import { principal } from './jogo/principal';
+import { arquipelago } from './jogos/arquipelago';
 import { assombrada } from './jogos/assombrada';
+import { attNotHuman } from './jogos/attNotHuman';
 import { aveltor } from './jogos/aveltor';
 import { chave } from './jogos/chave';
+import { fazendinha } from './jogos/fazendinha/teladeboasvindas';
 import { floresta } from './jogos/floresta';
+import { fuja } from './jogos/fuja';
+import { hospital304 } from './jogos/HOSPITAL304';
 import { labirinto } from './jogos/labirinto';
 import { lol } from './jogos/lol';
 import { mansao } from './jogos/mansao';
+import { mansaoAssombrada } from './jogos/mansao-assombrada/app';
+import { naoOlheParaTras } from './jogos/nao-olhe-para-tras';
 import { oExperimento } from './jogos/oExperimento';
+import { pokemonFireRed } from './jogos/pokemon';
+import { quemEstaLa } from './jogos/quemEstaLa';
 import { scaperoom } from './jogos/scaperoom';
 import { sonhos } from './jogos/sonhos';
 import { vereth } from './jogos/vereth';
@@ -20,6 +29,7 @@ import { fetchClient } from './utils/fetchApi';
 type ListaJogo = {
     descricao: string[];
     autores: string[];
+    turma?: string;
     f: () => Promise<void>;
 };
 
@@ -29,8 +39,80 @@ const listaJogos: Record<string, ListaJogo> = {
         descricao: ["Um mini-MMO online, mas é tudo em texto."],
         f: principal
     },
+    fazendinha: {
+        autores: ["Hugo da Rocha", "Vitor Gabriel", "Erik Vinicius"],
+        turma: "ADS 2026",
+        descricao: [],
+        f: fazendinha
+    },
+    mansaoassombrada: {
+        autores: ["João Carlos", "João Castaman", "David de Souza"],
+        turma: "ADS 2026",
+        descricao: [],
+        f: mansaoAssombrada
+    },
+    naoolheparatras: {
+        autores: ["Pedro Henrique", "Cauã Rodrigo", "Lemuel Lemes"],
+        turma: "ADS 2026",
+        descricao: [],
+        f: naoOlheParaTras
+    },
+    quemestala: {
+        autores: ["Amara Liz", "Mariana Zorzi"],
+        turma: "ADS 2026",
+        descricao: [
+            "Uma aventura de texto de terror em que você explora uma casa abandonada assombrada por algo que reconhece você.",
+            "Você acorda em uma casa que não reconhece — mas que, de alguma forma, reconhece você. Paredes com desenhos infantis, brinquedos abandonados e um choro distante na escuridão.",
+            "Nesta aventura de terror psicológico em formato texto, seu objetivo é explorar os cômodos da casa, recuperar **5 memórias perdidas** (itens de infância) e descobrir quem está escondido no sótão antes que o esquecimento o consuma.",
+            "",
+            "Como Jogar",
+            "",
+            "A cada sala, o jogo lista os comandos disponíveis. Digite o comando e pressione Enter.",
+            "Para andar pelos cômodos da casa, digite a direção desejada quando o prompt `>`",
+            "Além de andar, você precisará interagir com o cenário para resolver pequenos quebra-cabeças e encontrar seus itens."
+        ],
+        f: quemEstaLa
+    },
+    arquipelago: {
+        autores: ["João Guerini", "João Bento"],
+        turma: "ADS 2026",
+        descricao: [],
+        f: arquipelago
+    },
+    nothuman: {
+        autores: ["João Vitor", "Thalyson", "Ian Victor"],
+        turma: "ADS 2026",
+        descricao: [],
+        f: attNotHuman
+    },
+    hospital304: {
+        autores: ["Thalita Cristina", "Ana Clara", "Isabelly Lopes"],
+        turma: "ADS 2026",
+        descricao: [
+            "Hospital 304 é um jogo de investigação e narrativa em texto, ambientado em um hospital psiquiátrico abandonado. Você acorda sem memória, sem saber seu nome ou como chegou até ali. O que aconteceu naquele lugar? Quem é você? As respostas estão escondidas nos corredores, nas gravações, nos arquivos e nas memórias que foram roubadas de você.",
+            "Explore o hospital, colete itens e pistas, desbloqueie novas áreas e descubra a verdade por trás do Projeto ORION.",
+            "Itens importantes:",
+            "Chave da Escada de Serviço, Chave do Gerador, Fita K7, Seringa \"304 — Dose Final\", Cartão de Acesso ao Subsolo"
+        ],
+        f: hospital304
+    },
+    fuja: {
+        autores: ["Ana Sofia", "Diego", "Henrique Araújo"],
+        turma: "ADS 2026",
+        descricao: ["Fuja!"],
+        f: fuja
+    },
+    pokemon: {
+        autores: ["Gustavo Facioni", "Luiz Miguel"],
+        turma: "ADS 2026",
+        descricao: [
+            "Jogo baseado em 'Pokemon Fire Red'"
+        ],
+        f: pokemonFireRed
+    },
     labirinto: {
         autores: ["Lucas Coimbra Santi"],
+        turma: "ADS 2025",
         descricao: [
             "seu desafio é sair com vida. As direçoes aparacem em sua tela, voce possui saude e uma mochila para receber seus itens, mas use com sabedoria."
             ,"comandos:"
@@ -41,11 +123,13 @@ const listaJogos: Record<string, ListaJogo> = {
     },
     experimento: {
         autores: ["Evelyn do Vale", "Julia Alves"],
+        turma: "ADS 2025",
         descricao: ["Você se vê preso dentro de um porão e precisa interagir com os cenários e itens ao seu redor para conseguir escapar."],
         f: oExperimento
     },
     aveltor: {
         autores: ["Pedro Henrique", "Kaua Fernandes"],
+        turma: "ADS 2025",
         descricao: [
          "Um herói anónimo, com o destino do mundo nos ombros, inicia a sua jornada na pacata cidade de Eldrun, um pequeno ponto de luz no vasto e antigo continente de Aveltor. Forjado numa guerra esquecida entre deuses da luz e das trevas, este mundo agora vive uma paz frágil."
         ,""
@@ -77,6 +161,7 @@ const listaJogos: Record<string, ListaJogo> = {
     vereth: {
         descricao: ["Demo do meu jogo"],
         autores: ["Kauã Fernandes"],
+        turma: "ADS 2025",
         f: vereth
     },
 
@@ -93,12 +178,14 @@ const listaJogos: Record<string, ListaJogo> = {
             "Cada decisão que a gente toma nesse jogo faz toda a diferença. Será que você consegue ter a coragem de desvendar tudo e achar a saída?"
         ],
         autores: ["Sidnei Salustiano", "Elias Moreira"],
+        turma: "ADS 2025",
         f: chave
     },
 
     zafiir: {
         descricao: ["Ao despertar sem memória no meio de um laboratório em ruínas, seu desafio é claro: sobreviver. Você precisará explorar cada sala sombria em busca de cartões de acesso e pistas sobre o desastre que ocorreu, tudo isso enquanto é caçado implacavelmente pela 'Za'fiir', uma criatura experimental que agora domina o complexo. Use sua inteligência para desvendar os segredos da instalação e encontrar uma maneira de escapar antes que seja tarde demais."],
         autores: ["Lucas Iunges", "Tales Geraldo"],
+        turma: "ADS 2025",
         f: zafiir
     },
 
@@ -115,6 +202,7 @@ const listaJogos: Record<string, ListaJogo> = {
         ,"Dica: nem tudo é o que parece. O que você teme pode ser parte de você."
         ],
         autores: ["Luiz Guilhermy"],
+        turma: "ADS 2025",
         f: mansao
     },
 
@@ -126,6 +214,7 @@ const listaJogos: Record<string, ListaJogo> = {
         ,"Você tem coragem de descobrir a verdade e encontrar a saída?"
         ],
         autores: ["Gabriel Ciconello", "Pedro Noemerg", "Lucas Raphael"],
+        turma: "ADS 2025",
         f: assombrada
     },
 
@@ -143,18 +232,21 @@ const listaJogos: Record<string, ListaJogo> = {
         ,"*Horário é 1:03PM agora, um dia normal.*"
         ],
         autores: ["Gabriela Cunha", "Leonardo Pereira"],
+        turma: "ADS 2025",
         f: viajante
     },
 
     lol: {
         descricao: ["Baseado em League Of Legends, você irá se aventurar pelo mapa de Summoner's Rift com o objetivo de ser vitorioso. Para alcançar a vitória, deverá ajudar os aliados que encontra pelo caminho "],
         autores: ["Willem", "João Vitor"],
+        turma: "ADS 2025",
         f: lol
     },
 
     sonhos: {
         descricao: ["história interativa onde o personagem acorda em uma floresta misteriosa e precisa explorar."],
         autores: ["Antônio Júnior"],
+        turma: "ADS 2025",
         f: sonhos
     },
 
@@ -174,6 +266,7 @@ const listaJogos: Record<string, ListaJogo> = {
         ,"fazer cafe"
         ],
         autores: ["Luciano", "Lucineia"],
+        turma: "ADS 2025",
         f: scaperoom
     },
 
@@ -191,6 +284,7 @@ const listaJogos: Record<string, ListaJogo> = {
         ,"Digite “sair” a qualquer momento para encerrar a aventura."
         ],
         autores: ["Érika Pacheco","Lucivan Pacheco"],
+        turma: "ADS 2025",
         f: floresta
     }
 };

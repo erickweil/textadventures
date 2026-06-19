@@ -9,6 +9,13 @@ export const rl = {
     }
 };
 
+export const rlPromises = {
+    close: () => {},
+    question: (str: string) => {
+        return termPrompt(str);
+    }
+}
+
 export const process = {
     stdout: {
         write: (str: unknown) => {

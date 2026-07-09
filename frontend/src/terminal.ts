@@ -17,8 +17,46 @@ term.open(document.getElementById('xterm-container')!);
 fitAddon.fit();
 window.addEventListener('resize', () => fitAddon.fit());
 
+let command = '';
+let cursorIndex = 0;
+let optionsMode = false;
+let options: string[] = [];
+let lastPromptStr: unknown[] = [];
+let waitingPrompt: ((input: string | Error) => void) | null = null;
+let passwordMode = false;
+
+function refreshLine() {
+    // Esconde o cursor para evitar o "ghosting" branco no prompt
+    term.write('\x1b[?25l');
+    
+    // Move cursor to the beginning of the line and Clear the line
+    term.write('\r\x1b[2K');
+    
+    // Reprint the prompt
+    const promptBefore = [...lastPromptStr];
+    const last = promptBefore.pop() || "> ";
+    if(promptBefore.length > 0) {
+        termPrintRaw(promptBefore.join(" ") + " ");
+    }
+    term.write("" + last);
+    
+    // Escreve o comando atual
+    const displayCmd = passwordMode ? "*".repeat(command.length) : command;
+    term.write(displayCmd);
+
+    // Move o cursor para a posição correta antes de mostrá-lo novamente
+    const movesBack = command.length - cursorIndex;
+    if (movesBack > 0) {
+        term.write(`\x1b[${movesBack}D`);
+    }
+    
+    // Mostra o cursor novamente
+    term.write('\x1b[?25h');
+}
+
 export function _prompt() {
     command = '';
+    cursorIndex = 0;
     term.write('\r\n> ');
 }
 
@@ -38,12 +76,9 @@ export function termClear() {
     term.clear();
 }
 
-let optionsMode = false;
-let options: string[] = [];
-let lastPromptStr: unknown[] = [];
-let waitingPrompt: ((input: string | Error) => void) | null = null;
 export function prompt(...str: unknown[]): Promise<string> {
     command = optionsMode ? (options[0] || "") : "";
+    cursorIndex = command.length;
     lastPromptStr = [...str];
 
     const last = str.pop() || "> ";
@@ -63,12 +98,11 @@ export function prompt(...str: unknown[]): Promise<string> {
     });
 }
 
-let passwordMode = false;
 export async function passwordPrompt(...str: unknown[]) {
     try {
-    passwordMode = true;
-    const result = await prompt(...str);
-    return result;
+        passwordMode = true;
+        const result = await prompt(...str);
+        return result;
     } finally {
         passwordMode = false;
     }
@@ -98,15 +132,9 @@ export function termPrintAbovePrompt(...str: unknown[]) {
     // Print the message
     termPrint(...str);
     // Reprint the prompt and command
-    const promptBefore = [...lastPromptStr];
-    const last = promptBefore.pop() || "> ";
-    if(promptBefore.length > 0) {
-        termPrint(...promptBefore);
-    }
-    term.write(""+last+command);
+    refreshLine();
 }
 
-let command = '';
 type ComandConfig = {
     f: (...args: string[]) => void | Promise<void>,
     help?: string
@@ -127,11 +155,11 @@ function onInput(term: Terminal, text: string) {
     }
 
     const args = text?.split(' ') || [];
-    const command = args?.shift() || "";
-    if (command.length > 0) {
+    const cmdName = args?.shift() || "";
+    if (cmdName.length > 0) {
         term.writeln('');
-        if (command in commands) {
-            let promise = commands[command].f(...args);
+        if (cmdName in commands) {
+            let promise = commands[cmdName].f(...args);
             if(promise && promise.then) {
                 promise.then(() => {
                     _prompt();
@@ -145,7 +173,7 @@ function onInput(term: Terminal, text: string) {
             } 
             return;
         }
-        term.writeln(`${command}: é oq? digite 'ajuda' para mais informações`);
+        term.writeln(`${cmdName}: é oq? digite 'ajuda' para mais informações`);
     }
     _prompt();
 }
@@ -168,6 +196,8 @@ function runFakeTerminal() {
         switch (e) {
             case '\u0003': // Ctrl+C
                 term.write('^C');
+                command = '';
+                cursorIndex = 0;
                 _prompt();
                 if(waitingPrompt) {
                     waitingPrompt(new Error("Ctrl + C"));   
@@ -182,14 +212,25 @@ function runFakeTerminal() {
                 }
                 onInput(term, command);
                 command = '';
+                cursorIndex = 0;
                 break;
             case '\u007F': // Backspace (DEL)
-                // Do not delete the prompt
-                if ((term as any)._core.buffer.x > 2) {
-                    term.write('\b \b');
-                    if (command.length > 0) {
-                        command = command.slice(0, command.length - 1);
-                    }
+                if (cursorIndex > 0) {
+                    command = command.slice(0, cursorIndex - 1) + command.slice(cursorIndex);
+                    cursorIndex--;
+                    refreshLine();
+                }
+                break;
+            case '\x1b[D': // Seta para Esquerda
+                if (cursorIndex > 0) {
+                    cursorIndex--;
+                    refreshLine();
+                }
+                break;
+            case '\x1b[C': // Seta para Direita
+                if (cursorIndex < command.length) {
+                    cursorIndex++;
+                    refreshLine();
                 }
                 break;
             case '\x1b[A': // Seta para Cima
@@ -198,21 +239,15 @@ function runFakeTerminal() {
                     const currentOption = command.trim().toLowerCase() || options[0].toLowerCase();
                     let currentIndex = options.findIndex(o => o.toLowerCase() === currentOption);
                     currentIndex = (currentIndex - 1 + options.length) % options.length;
-                    // Limpa a linha atual
-                    for (let i = 0; i < command.length; i++) {
-                        term.write('\b \b');
-                    }
                     command = options[currentIndex];
-                    term.write(command);
+                    cursorIndex = command.length;
+                    refreshLine();
                 } else {
                     if (historyIndex > 0) {
                         historyIndex--;
-                        // Limpa a linha atual
-                        for (let i = 0; i < command.length; i++) {
-                            term.write('\b \b');
-                        }
                         command = commandHistory[historyIndex];
-                        term.write(command);
+                        cursorIndex = command.length;
+                        refreshLine();
                     }
                 }
                 break;
@@ -223,40 +258,32 @@ function runFakeTerminal() {
                     const currentOption = command.trim().toLowerCase() || options[0].toLowerCase();
                     let currentIndex = options.findIndex(o => o.toLowerCase() === currentOption);
                     currentIndex = (currentIndex + 1) % options.length;
-                    // Limpa a linha atual
-                    for (let i = 0; i < command.length; i++) {
-                        term.write('\b \b');
-                    }
                     command = options[currentIndex];
-                    term.write(command);
+                    cursorIndex = command.length;
+                    refreshLine();
                 } else if (historyIndex < commandHistory.length - 1) {
                     historyIndex++;
-                    // Limpa a linha atual
-                    for (let i = 0; i < command.length; i++) {
-                        term.write('\b \b');
-                    }
                     command = commandHistory[historyIndex];
-                    term.write(command);
+                    cursorIndex = command.length;
+                    refreshLine();
                 } else if (historyIndex === commandHistory.length - 1) {
                     // Se estiver no último item, ir para baixo limpa o comando
                     historyIndex++;
-                     for (let i = 0; i < command.length; i++) {
-                        term.write('\b \b');
-                    }
                     command = "";
+                    cursorIndex = 0;
+                    refreshLine();
                 }
             break;
             default: // Print all other characters for demo
                 if(optionsMode) {
                     // apaga a última opção
-                    for (let i = 0; i < command.length; i++) {
-                        term.write('\b \b');
-                    }
                     command = "";
+                    cursorIndex = 0;
                 }
                 if (e >= String.fromCharCode(0x20) && e <= String.fromCharCode(0x7E) || e >= '\u00a0') {
-                    command += e;
-                    term.write(passwordMode ? "*" : e);
+                    command = command.slice(0, cursorIndex) + e + command.slice(cursorIndex);
+                    cursorIndex += e.length;
+                    refreshLine();
                 }
         }
     });
